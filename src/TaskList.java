@@ -13,7 +13,7 @@ import java.util.Comparator;
  *   void setCompleted(boolean completed)
  *   String getCreatedBy()
  *   String getAssignedTo()
- *   void setAssignedTo(String username)
+ *   void setAssignedTo(String user name)
  *   LocalDate getDueDate()   (only used for sorting, can be null)
  */
 public class TaskList {
@@ -62,7 +62,7 @@ public class TaskList {
         if (found == null) {
             return false;
         }
-        found.setCompleted(true);
+        found.markComplete();
         return true;
     }
 
@@ -97,7 +97,7 @@ public class TaskList {
     public ArrayList<task> filterByCompletion(boolean completed) {
         ArrayList<task> result = new ArrayList<task>();
         for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).isCompleted() == completed) {
+            if (tasks.get(i).isComplete() == completed) {
                 result.add(tasks.get(i));
             }
         }

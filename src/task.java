@@ -138,6 +138,26 @@ public class task {
 		return status == Status.COMPLETE;
 	}
 
+	// used by TaskList: same as isComplete()
+	public boolean isCompleted() {
+		return isComplete();
+	}
+
+	// used by TaskList: true marks the task done, false resets it to not started
+	public void setCompleted(boolean completed) {
+		if (completed) {
+			markComplete();
+		} else {
+			status = Status.NOT_STARTED;
+			dateFinished = null;
+		}
+	}
+
+	// used by TaskList: the title is the task's name
+	public String getTitle() {
+		return name;
+	}
+
 	// checks if the task is past its due date and not done yet
 	public boolean isOverdue() {
 		if (dueDate == null || isComplete()) {
