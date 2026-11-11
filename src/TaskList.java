@@ -3,10 +3,10 @@ import java.util.Collections;
 import java.util.Comparator;
 
 /**
- * TaskList keeps track of all the Task objects.
+ * TaskList keeps track of all the task objects.
  * It only stores tasks in memory, the database stuff will be in a different class.
  *
- * Methods we need in the Task class (from the other half of the project):
+ * Methods we need in the task class (from the other half of the project):
  *   int getId()
  *   String getTitle()
  *   boolean isCompleted()
@@ -18,26 +18,26 @@ import java.util.Comparator;
  */
 public class TaskList {
 
-    private ArrayList<Task> tasks;
+    private ArrayList<task> tasks;
 
     public TaskList() {
-        tasks = new ArrayList<Task>();
+        tasks = new ArrayList<task>();
     }
 
     // add a task to the list
-    public void addTask(Task task) {
-        if (task == null) {
+    public void addTask(task newTask) {
+        if (newTask == null) {
             throw new IllegalArgumentException("Task can't be null");
         }
         // make sure there isn't already a task with this id
-        if (findById(task.getId()) != null) {
+        if (findById(newTask.getId()) != null) {
             throw new IllegalArgumentException("A task with that id already exists");
         }
-        tasks.add(task);
+        tasks.add(newTask);
     }
 
     // find a task by its id, returns null if we can't find it
-    public Task findById(int id) {
+    public task findById(int id) {
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).getId() == id) {
                 return tasks.get(i);
@@ -48,44 +48,44 @@ public class TaskList {
 
     // delete a task, returns true if it was deleted
     public boolean removeTask(int id) {
-        Task task = findById(id);
-        if (task == null) {
+        task found = findById(id);
+        if (found == null) {
             return false;
         }
-        tasks.remove(task);
+        tasks.remove(found);
         return true;
     }
 
     // mark a task as complete, returns false if the task doesn't exist
     public boolean markComplete(int id) {
-        Task task = findById(id);
-        if (task == null) {
+        task found = findById(id);
+        if (found == null) {
             return false;
         }
-        task.setCompleted(true);
+        found.setCompleted(true);
         return true;
     }
 
     // assign a task to a user, returns false if the task doesn't exist
     public boolean assignTask(int id, String username) {
-        Task task = findById(id);
-        if (task == null) {
+        task found = findById(id);
+        if (found == null) {
             return false;
         }
-        task.setAssignedTo(username);
+        found.setAssignedTo(username);
         return true;
     }
 
     // get every task (returns a copy so nobody messes with our real list)
-    public ArrayList<Task> getAllTasks() {
-        return new ArrayList<Task>(tasks);
+    public ArrayList<task> getAllTasks() {
+        return new ArrayList<task>(tasks);
     }
 
     // get tasks that the user created OR that are assigned to them
-    public ArrayList<Task> getTasksForUser(String username) {
-        ArrayList<Task> result = new ArrayList<Task>();
+    public ArrayList<task> getTasksForUser(String username) {
+        ArrayList<task> result = new ArrayList<task>();
         for (int i = 0; i < tasks.size(); i++) {
-            Task t = tasks.get(i);
+            task t = tasks.get(i);
             if (username.equals(t.getCreatedBy()) || username.equals(t.getAssignedTo())) {
                 result.add(t);
             }
@@ -94,8 +94,8 @@ public class TaskList {
     }
 
     // extra feature: filter by completed (true) or not completed (false)
-    public ArrayList<Task> filterByCompletion(boolean completed) {
-        ArrayList<Task> result = new ArrayList<Task>();
+    public ArrayList<task> filterByCompletion(boolean completed) {
+        ArrayList<task> result = new ArrayList<task>();
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).isCompleted() == completed) {
                 result.add(tasks.get(i));
@@ -105,10 +105,10 @@ public class TaskList {
     }
 
     // extra feature: sort by due date (earliest first, no due date goes at the end)
-    public ArrayList<Task> getTasksSortedByDueDate() {
-        ArrayList<Task> sorted = new ArrayList<Task>(tasks);
-        Collections.sort(sorted, new Comparator<Task>() {
-            public int compare(Task a, Task b) {
+    public ArrayList<task> getTasksSortedByDueDate() {
+        ArrayList<task> sorted = new ArrayList<task>(tasks);
+        Collections.sort(sorted, new Comparator<task>() {
+            public int compare(task a, task b) {
                 if (a.getDueDate() == null && b.getDueDate() == null) {
                     return 0;
                 }
