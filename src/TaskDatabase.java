@@ -64,10 +64,12 @@ class TaskDatabase {
     void insert(task t) {
         String sql = "INSERT INTO tasks (name, description, created_by, assigned_to, date_created, "
                 + "date_finished, due_date, priority, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             fillStatement(ps, t);
             ps.executeUpdate();
-            try (ResultSet keys = ps.getGeneratedKeys()) {
+            // newer SQLite drivers don't support getGeneratedKeys(), so ask SQLite for the new id instead
+            try (Statement st = connection.createStatement();
+                    ResultSet keys = st.executeQuery("SELECT last_insert_rowid()")) {
                 if (keys.next()) {
                     t.setId(keys.getInt(1));
                 }
