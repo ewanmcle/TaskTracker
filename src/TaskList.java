@@ -4,35 +4,46 @@ import java.util.Comparator;
 
 /**
  * TaskList keeps track of all the task objects.
- * It only stores tasks in memory, the database stuff will be in a different class.
+ * The tasks are kept in memory while the program runs, and every change is also saved to the
+ * SQLite database (tasks.db) through TaskDatabase. TaskList is the only class that uses the database.
  *
  * Methods we need in the task class (from the other half of the project):
  *   int getId()
+ *   void setId(int id)
  *   String getTitle()
  *   boolean isCompleted()
  *   void setCompleted(boolean completed)
  *   String getCreatedBy()
  *   String getAssignedTo()
- *   void setAssignedTo(String user name)
+ *   void setAssignedTo(String username)
  *   LocalDate getDueDate()   (only used for sorting, can be null)
  */
 public class TaskList {
 
     private ArrayList<task> tasks;
+    private TaskDatabase database;
 
+    // uses the default database file (tasks.db)
     public TaskList() {
-        tasks = new ArrayList<task>();
+        this("tasks.db");
     }
 
-    // add a task to the list
+    // uses a different database file, handy for JUnit tests
+    public TaskList(String dbFile) {
+        database = new TaskDatabase(dbFile);
+        tasks = database.loadAll();
+    }
+
+    // add a task to the list and save it, the database gives the task its id
     public void addTask(task newTask) {
         if (newTask == null) {
             throw new IllegalArgumentException("Task can't be null");
         }
-        // make sure there isn't already a task with this id
-        if (findById(newTask.getId()) != null) {
+        // a task that already has an id and is already in the list is a duplicate
+        if (newTask.getId() != 0 && findById(newTask.getId()) != null) {
             throw new IllegalArgumentException("A task with that id already exists");
         }
+        database.insert(newTask);
         tasks.add(newTask);
     }
 
@@ -52,6 +63,7 @@ public class TaskList {
         if (found == null) {
             return false;
         }
+        database.delete(id);
         tasks.remove(found);
         return true;
     }
@@ -63,6 +75,7 @@ public class TaskList {
             return false;
         }
         found.markComplete();
+        database.update(found);
         return true;
     }
 
@@ -73,6 +86,17 @@ public class TaskList {
             return false;
         }
         found.setAssignedTo(username);
+        database.update(found);
+        return true;
+    }
+
+    // call this after changing a task with its setters (setName, setDueDate, etc.)
+    // so the change gets saved, returns false if the task isn't in the list
+    public boolean updateTask(task changed) {
+        if (changed == null || findById(changed.getId()) == null) {
+            return false;
+        }
+        database.update(changed);
         return true;
     }
 
@@ -130,5 +154,10 @@ public class TaskList {
 
     public boolean isEmpty() {
         return tasks.isEmpty();
+    }
+
+    // closes the database connection, call this when the program is done with the list
+    public void close() {
+        database.close();
     }
 }
