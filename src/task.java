@@ -1,3 +1,6 @@
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 
 public class task {
@@ -49,6 +52,27 @@ public class task {
 		this.dueDate = dueDate;
 		this.priority = priority;
 		this.status = status;
+	}
+
+	// builds a task from the current row of a JDBC ResultSet
+	// column names match the tasks table in schema.sql
+	public static task fromResultSet(ResultSet rs) throws SQLException {
+		return new task(
+				rs.getInt("id"),
+				rs.getString("name"),
+				rs.getString("description"),
+				rs.getString("created_by"),
+				rs.getString("assigned_to"),
+				toLocalDate(rs.getDate("date_created")),
+				toLocalDate(rs.getDate("date_finished")),
+				toLocalDate(rs.getDate("due_date")),
+				Priority.valueOf(rs.getString("priority")),
+				Status.valueOf(rs.getString("status")));
+	}
+
+	// JDBC gives back java.sql.Date, which can be null
+	private static LocalDate toLocalDate(Date d) {
+		return d == null ? null : d.toLocalDate();
 	}
 
 	// getters and setters
