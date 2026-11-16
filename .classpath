@@ -8,6 +8,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.47.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/flatlaf-3.8.jar"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
