@@ -1,204 +1,135 @@
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 
+/**
+ * A task is one thing on the to do list.
+ * This class only holds the data for a task. Saving and loading is done somewhere else.
+ */
 public class task {
 
-	// status options for a task
-	public enum Status {
-		NOT_STARTED, WIP, COMPLETE
-	}
+    // the different statuses a task can have
+    public enum Status {
+        NOT_STARTED, WIP, COMPLETE
+    }
 
-	// priority options
-	public enum Priority {
-		LOW, MEDIUM, HIGH
-	}
+    // the different urgency levels a task can have
+    public enum Priority {
+        LOW, MEDIUM, HIGH
+    }
 
-	private int id; // id from the database
-	private String createdBy;
-	private String assignedTo;
-	private LocalDate dateCreated;
-	private LocalDate dateFinished;
-	private String name;
-	private String description;
-	private LocalDate dueDate;
-	private Priority priority;
-	private Status status;
+    private int id;               // the database gives this, 0 means it hasn't been saved yet
+    private String name;
+    private String description;
+    private String createdBy;     // username of the person who made the task
+    private String assignedTo;    // username of the person doing the task, null if nobody yet
+    private LocalDate dateCreated;
+    private LocalDate dateFinished;   // null until the task is finished
+    private Priority priority;    // the urgency level
+    private Status status;
 
-	// constructor for making a new task
-	public task(String name, String description, String createdBy, LocalDate dueDate, Priority priority) {
-		this.name = name;
-		this.description = description;
-		this.createdBy = createdBy;
-		this.assignedTo = createdBy; // assign to whoever made it for now
-		this.dueDate = dueDate;
-		this.priority = priority;
-		this.dateCreated = LocalDate.now();
-		this.dateFinished = null;
-		this.status = Status.NOT_STARTED;
-	}
+    // constructor for making a brand new task
+    public task(String name, String description, String createdBy, Priority priority) {
+        this.id = 0;
+        this.name = name;
+        this.description = description;
+        this.createdBy = createdBy;
+        this.assignedTo = null;
+        this.dateCreated = LocalDate.now();
+        this.dateFinished = null;
+        this.priority = priority;
+        this.status = Status.NOT_STARTED;
+    }
 
-	// constructor for when we load a task from the database
-	public task(int id, String name, String description, String createdBy, String assignedTo,
-			LocalDate dateCreated, LocalDate dateFinished, LocalDate dueDate, Priority priority, Status status) {
-		this.id = id;
-		this.name = name;
-		this.description = description;
-		this.createdBy = createdBy;
-		this.assignedTo = assignedTo;
-		this.dateCreated = dateCreated;
-		this.dateFinished = dateFinished;
-		this.dueDate = dueDate;
-		this.priority = priority;
-		this.status = status;
-	}
+    // constructor for when we load a task that was already saved
+    public task(int id, String name, String description, String createdBy, String assignedTo,
+            LocalDate dateCreated, LocalDate dateFinished, Priority priority, Status status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.createdBy = createdBy;
+        this.assignedTo = assignedTo;
+        this.dateCreated = dateCreated;
+        this.dateFinished = dateFinished;
+        this.priority = priority;
+        this.status = status;
+    }
 
-	// builds a task from the current row of a JDBC ResultSet
-	// column names match the tasks table in schema.sql
-	public static task fromResultSet(ResultSet rs) throws SQLException {
-		return new task(
-				rs.getInt("id"),
-				rs.getString("name"),
-				rs.getString("description"),
-				rs.getString("created_by"),
-				rs.getString("assigned_to"),
-				toLocalDate(rs.getDate("date_created")),
-				toLocalDate(rs.getDate("date_finished")),
-				toLocalDate(rs.getDate("due_date")),
-				Priority.valueOf(rs.getString("priority")),
-				Status.valueOf(rs.getString("status")));
-	}
+    // getters and setters
 
-	// JDBC gives back java.sql.Date, which can be null
-	private static LocalDate toLocalDate(Date d) {
-		return d == null ? null : d.toLocalDate();
-	}
+    public int getId() {
+        return id;
+    }
 
-	// getters and setters
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public int getId() {
-		return id;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getCreatedBy() {
-		return createdBy;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getAssignedTo() {
-		return assignedTo;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void setAssignedTo(String assignedTo) {
-		this.assignedTo = assignedTo;
-	}
+    public String getCreatedBy() {
+        return createdBy;
+    }
 
-	public LocalDate getDateCreated() {
-		return dateCreated;
-	}
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 
-	public LocalDate getDateFinished() {
-		return dateFinished;
-	}
+    public String getAssignedTo() {
+        return assignedTo;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void setAssignedTo(String assignedTo) {
+        this.assignedTo = assignedTo;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public LocalDate getDateCreated() {
+        return dateCreated;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public void setDateCreated(LocalDate dateCreated) {
+        this.dateCreated = dateCreated;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public LocalDate getDateFinished() {
+        return dateFinished;
+    }
 
-	public LocalDate getDueDate() {
-		return dueDate;
-	}
+    public void setDateFinished(LocalDate dateFinished) {
+        this.dateFinished = dateFinished;
+    }
 
-	public void setDueDate(LocalDate dueDate) {
-		this.dueDate = dueDate;
-	}
+    public Priority getPriority() {
+        return priority;
+    }
 
-	public Priority getPriority() {
-		return priority;
-	}
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
 
-	public void setPriority(Priority priority) {
-		this.priority = priority;
-	}
+    public Status getStatus() {
+        return status;
+    }
 
-	public Status getStatus() {
-		return status;
-	}
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-
-	// other methods
-
-	// sets the task to work in progress
-	public void startTask() {
-		status = Status.WIP;
-	}
-
-	// marks the task as done and saves the date
-	public void markComplete() {
-		status = Status.COMPLETE;
-		dateFinished = LocalDate.now();
-	}
-
-	public boolean isComplete() {
-		return status == Status.COMPLETE;
-	}
-
-	// used by TaskList: same as isComplete()
-	public boolean isCompleted() {
-		return isComplete();
-	}
-
-	// used by TaskList: true marks the task done, false resets it to not started
-	public void setCompleted(boolean completed) {
-		if (completed) {
-			markComplete();
-		} else {
-			status = Status.NOT_STARTED;
-			dateFinished = null;
-		}
-	}
-
-	// used by TaskList: the title is the task's name
-	public String getTitle() {
-		return name;
-	}
-
-	// checks if the task is past its due date and not done yet
-	public boolean isOverdue() {
-		if (dueDate == null || isComplete()) {
-			return false;
-		}
-		return LocalDate.now().isAfter(dueDate);
-	}
-
-	// used for showing the tasks a user made or got assigned
-	public boolean belongsTo(String username) {
-		return username.equals(createdBy) || username.equals(assignedTo);
-	}
-
-	@Override
-	public String toString() {
-		return name + " | " + description + " | Due: " + dueDate + " | Priority: " + priority
-				+ " | Status: " + status + " | Assigned to: " + assignedTo;
-	}
-
+    @Override
+    public String toString() {
+        return name + " | " + description + " | Priority: " + priority
+                + " | Status: " + status + " | Assigned to: " + assignedTo;
+    }
 }
