@@ -59,10 +59,12 @@ public class UserDatabase {
             return false;
         }
         String sql = "INSERT INTO users (username, email, password_hash, date_created) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             fillStatement(ps, newUser);
             ps.executeUpdate();
-            try (ResultSet keys = ps.getGeneratedKeys()) {
+            // newer SQLite drivers don't support getGeneratedKeys(), so ask SQLite for the new id instead
+            try (Statement st = connection.createStatement();
+                    ResultSet keys = st.executeQuery("SELECT last_insert_rowid()")) {
                 if (keys.next()) {
                     newUser.setId(keys.getInt(1));
                 }
