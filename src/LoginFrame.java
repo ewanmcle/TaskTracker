@@ -1,19 +1,14 @@
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -21,7 +16,8 @@ import javax.swing.JCheckBox;
 import javax.swing.border.EmptyBorder;
 
 /**
- * The first window: log in or open the Create Account dialog.
+ * The first window: log in or open the account creation window.
+ * This class only builds the window. What the buttons do is in LoginFrameFunctionality.
  * Built so WindowBuilder can open it in the Design tab.
  */
 public class LoginFrame extends JFrame {
@@ -32,28 +28,15 @@ public class LoginFrame extends JFrame {
 	private JTextField usernameField;
 	private JPasswordField passwordField;
 
-	private UserDatabase users;
-	private TaskList tasks;
-
-	// starts the app
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				Theme.setupSaved();
-				LoginFrame frame = new LoginFrame(new UserDatabase(), new TaskList());
-				frame.setVisible(true);
-			}
-		});
-	}
+	private LoginFrameFunctionality functionality;   // what the buttons do
 
 	// WindowBuilder uses this constructor to show the design
 	public LoginFrame() {
 		this(null, null);
 	}
 
-	public LoginFrame(UserDatabase users, TaskList tasks) {
-		this.users = users;
-		this.tasks = tasks;
+	public LoginFrame(UserDatabaseHandler users, TaskList tasks) {
+		functionality = new LoginFrameFunctionality(this, users, tasks);
 
 		setTitle("TaskTracker | Log in");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -131,8 +114,8 @@ public class LoginFrame extends JFrame {
 
 		JButton createAccountButton = new JButton("Create an account");
 		createAccountButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				openRegister();
+			public void actionPerformed(ActionEvent event) {
+				functionality.openAccountCreation();
 			}
 		});
 		GridBagConstraints gbc_createAccountButton = new GridBagConstraints();
@@ -143,8 +126,8 @@ public class LoginFrame extends JFrame {
 
 		JButton loginButton = new JButton("Log In");
 		loginButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				logIn();
+			public void actionPerformed(ActionEvent event) {
+				functionality.logIn();
 			}
 		});
 		GridBagConstraints gbc_loginButton = new GridBagConstraints();
@@ -156,8 +139,8 @@ public class LoginFrame extends JFrame {
 		final JCheckBox darkModeCheck = new JCheckBox("Dark mode");
 		darkModeCheck.setSelected(Theme.isDark());
 		darkModeCheck.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Theme.setDark(darkModeCheck.isSelected());
+			public void actionPerformed(ActionEvent event) {
+				functionality.setDarkMode(darkModeCheck.isSelected());
 			}
 		});
 		GridBagConstraints gbc_darkModeCheck = new GridBagConstraints();
@@ -171,47 +154,23 @@ public class LoginFrame extends JFrame {
 		getRootPane().setDefaultButton(loginButton);
 	}
 
-	// checks the username and password, then opens the main window
-	private void logIn() {
-		String username = usernameField.getText().trim();
-		String password = new String(passwordField.getPassword());
-		if (username.isEmpty() || password.isEmpty()) {
-			JOptionPane.showMessageDialog(this, "Enter your username and password.", "Log in", JOptionPane.WARNING_MESSAGE);
-			return;
-		}
-		User user = users.findByUsername(username);
-		if (user == null || !user.getPasswordHash().equals(hashPassword(password))) {
-			JOptionPane.showMessageDialog(this, "Wrong username or password.", "Log in", JOptionPane.ERROR_MESSAGE);
-			passwordField.setText("");
-			return;
-		}
-		MainWindow main = new MainWindow(user.getUsername(), tasks, users);
-		main.setVisible(true);
-		dispose();
+	// ---------- used by LoginFrameFunctionality to read and change the screen ----------
+
+	public String getEnteredUsername() {
+		return usernameField.getText().trim();
 	}
 
-	private void openRegister() {
-		RegisterDialog dialog = new RegisterDialog(this, users);
-		dialog.setVisible(true);
-		if (dialog.getCreatedUser() != null) {
-			usernameField.setText(dialog.getCreatedUser().getUsername());
-			passwordField.setText("");
-			passwordField.requestFocusInWindow();
-		}
+	public String getEnteredPassword() {
+		return new String(passwordField.getPassword());
 	}
 
-	// turns a password into a SHA-256 hash so the plain password is never saved
-	public static String hashPassword(String password) {
-		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			byte[] bytes = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-			StringBuilder hex = new StringBuilder();
-			for (byte b : bytes) {
-				hex.append(String.format("%02x", b));
-			}
-			return hex.toString();
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException("SHA-256 isn't available", e);
-		}
+	public void setEnteredUsername(String username) {
+		usernameField.setText(username);
+	}
+
+	// empties the password box and puts the cursor in it
+	public void clearPassword() {
+		passwordField.setText("");
+		passwordField.requestFocusInWindow();
 	}
 }

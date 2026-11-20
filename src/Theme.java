@@ -43,9 +43,9 @@ public final class Theme {
 		}
 		apply(dark);
 		FlatLaf.updateUI();
-		for (Window w : Window.getWindows()) {
-			if (w instanceof RootPaneContainer) {
-				decorate(((RootPaneContainer) w).getRootPane());
+		for (Window window : Window.getWindows()) {
+			if (window instanceof RootPaneContainer) {
+				decorate(((RootPaneContainer) window).getRootPane());
 			}
 		}
 		prefs().putBoolean(DARK_MODE_KEY, dark);
@@ -75,8 +75,8 @@ public final class Theme {
 		UIManager.put("Table.showHorizontalLines", true);
 		UIManager.put("Table.showVerticalLines", false);
 		UIManager.put("TableHeader.height", 28);
-		Color tableBg = UIManager.getColor("Table.background");
-		UIManager.put("Table.alternateRowColor", dark ? brighten(tableBg, 8) : brighten(tableBg, -8));
+		Color tableBackground = UIManager.getColor("Table.background");
+		UIManager.put("Table.alternateRowColor", dark ? brighten(tableBackground, 8) : brighten(tableBackground, -8));
 
 		// button styles
 		UIManager.put("[style]Button.primary",
@@ -88,15 +88,15 @@ public final class Theme {
 	}
 
 	// makes a color lighter (positive amount) or darker (negative amount)
-	private static Color brighten(Color c, int amount) {
-		if (c == null) {
+	private static Color brighten(Color color, int amount) {
+		if (color == null) {
 			return null;
 		}
-		return new Color(clamp(c.getRed() + amount), clamp(c.getGreen() + amount), clamp(c.getBlue() + amount));
+		return new Color(clamp(color.getRed() + amount), clamp(color.getGreen() + amount), clamp(color.getBlue() + amount));
 	}
 
-	private static int clamp(int v) {
-		return Math.max(0, Math.min(255, v));
+	private static int clamp(int value) {
+		return Math.max(0, Math.min(255, value));
 	}
 
 	private static Preferences prefs() {

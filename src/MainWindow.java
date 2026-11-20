@@ -54,7 +54,7 @@ public class MainWindow extends JFrame {
 
 	private String currentUser;
 	private TaskList tasks;
-	private UserDatabase users;
+	private UserDatabaseHandler users;
 	private ArrayList<task> shownTasks = new ArrayList<task>();   // the tasks in the table, same order as the rows
 
 	// WindowBuilder uses this constructor to show the design
@@ -62,7 +62,7 @@ public class MainWindow extends JFrame {
 		this("ewan", new TaskList(), null);
 	}
 
-	public MainWindow(String currentUser, TaskList tasks, UserDatabase users) {
+	public MainWindow(String currentUser, TaskList tasks, UserDatabaseHandler users) {
 		this.currentUser = currentUser;
 		this.tasks = tasks;
 		this.users = users;
@@ -80,7 +80,7 @@ public class MainWindow extends JFrame {
 
 		JMenuItem logOutItem = new JMenuItem("Log Out");
 		logOutItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				logOut();
 			}
 		});
@@ -88,7 +88,7 @@ public class MainWindow extends JFrame {
 
 		JMenuItem exitItem = new JMenuItem("Exit");
 		exitItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				System.exit(0);
 			}
 		});
@@ -99,7 +99,7 @@ public class MainWindow extends JFrame {
 
 		JMenuItem newTaskItem = new JMenuItem("New Task...");
 		newTaskItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				newTask();
 			}
 		});
@@ -107,7 +107,7 @@ public class MainWindow extends JFrame {
 
 		JMenuItem editTaskItem = new JMenuItem("Edit Task...");
 		editTaskItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				editTask();
 			}
 		});
@@ -115,7 +115,7 @@ public class MainWindow extends JFrame {
 
 		JMenuItem deleteTaskItem = new JMenuItem("Delete Task");
 		deleteTaskItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				deleteTask();
 			}
 		});
@@ -129,7 +129,7 @@ public class MainWindow extends JFrame {
 		darkModeItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
 				Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() | KeyEvent.SHIFT_DOWN_MASK));
 		darkModeItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				setDarkMode(darkModeItem.isSelected());
 			}
 		});
@@ -140,7 +140,7 @@ public class MainWindow extends JFrame {
 
 		JMenuItem aboutItem = new JMenuItem("About TaskTracker");
 		aboutItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				JOptionPane.showMessageDialog(MainWindow.this, "TaskTracker\nA simple team task tracker.");
 			}
 		});
@@ -165,7 +165,7 @@ public class MainWindow extends JFrame {
 		JButton newButton = new JButton("New Task");
 		newButton.putClientProperty("FlatLaf.styleClass", "primary");
 		newButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				newTask();
 			}
 		});
@@ -173,7 +173,7 @@ public class MainWindow extends JFrame {
 
 		JButton editButton = new JButton("Edit");
 		editButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				editTask();
 			}
 		});
@@ -181,7 +181,7 @@ public class MainWindow extends JFrame {
 
 		JButton statusButton = new JButton("Change Status...");
 		statusButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				changeStatus();
 			}
 		});
@@ -189,7 +189,7 @@ public class MainWindow extends JFrame {
 
 		JButton assignButton = new JButton("Assign...");
 		assignButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				assignTask();
 			}
 		});
@@ -198,7 +198,7 @@ public class MainWindow extends JFrame {
 		JButton deleteButton = new JButton("Delete");
 		deleteButton.putClientProperty("FlatLaf.styleClass", "danger");
 		deleteButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				deleteTask();
 			}
 		});
@@ -215,7 +215,7 @@ public class MainWindow extends JFrame {
 		statusFilterBox = new JComboBox<String>();
 		statusFilterBox.setModel(new DefaultComboBoxModel<String>(new String[] {ALL_STATUSES, "NOT_STARTED", "WIP", "COMPLETE"}));
 		statusFilterBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				refreshTable();
 			}
 		});
@@ -224,7 +224,7 @@ public class MainWindow extends JFrame {
 		myTasksCheck = new JCheckBox("My tasks only");
 		myTasksCheck.setSelected(true);
 		myTasksCheck.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				refreshTable();
 			}
 		});
@@ -236,7 +236,7 @@ public class MainWindow extends JFrame {
 		sortBox = new JComboBox<String>();
 		sortBox.setModel(new DefaultComboBoxModel<String>(new String[] {"Name", "Priority", "Status", "Date created"}));
 		sortBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				refreshTable();
 			}
 		});
@@ -260,8 +260,8 @@ public class MainWindow extends JFrame {
 		table.setAutoCreateRowSorter(false);
 		table.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
+			public void mouseClicked(MouseEvent event) {
+				if (event.getClickCount() == 2) {
 					editTask();
 				}
 			}
@@ -300,7 +300,7 @@ public class MainWindow extends JFrame {
 		darkModeButton.setSelected(Theme.isDark());
 		darkModeButton.setToolTipText("Switch between light and dark mode");
 		darkModeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				setDarkMode(darkModeButton.isSelected());
 			}
 		});
@@ -316,8 +316,8 @@ public class MainWindow extends JFrame {
 		if (tasks == null || tableModel == null || sortBox == null || statusFilterBox == null || myTasksCheck == null) {
 			return;   // still being built
 		}
-		String sortField = sortFieldName((String) sortBox.getSelectedItem());
-		boolean ascending = !"priority".equals(sortField);   // show HIGH priority first
+		task.Field sortField = sortFieldName((String) sortBox.getSelectedItem());
+		boolean ascending = sortField != task.Field.PRIORITY;   // show HIGH priority first
 		ArrayList<task> sorted = tasks.sortBy(sortField, ascending);
 
 		String statusFilter = (String) statusFilterBox.getSelectedItem();
@@ -327,26 +327,29 @@ public class MainWindow extends JFrame {
 		tableModel.setRowCount(0);
 		int inProgress = 0;
 		int completed = 0;
-		for (task t : sorted) {
-			if (!ALL_STATUSES.equals(statusFilter) && !t.getStatus().name().equals(statusFilter)) {
+		for (task currentTask : sorted) {
+			task.Status status = (task.Status) currentTask.getField(task.Field.STATUS);
+			String createdBy = (String) currentTask.getField(task.Field.CREATED_BY);
+			String assignedTo = (String) currentTask.getField(task.Field.ASSIGNED_TO);
+			if (!ALL_STATUSES.equals(statusFilter) && !status.name().equals(statusFilter)) {
 				continue;
 			}
-			if (mineOnly && !currentUser.equals(t.getCreatedBy()) && !currentUser.equals(t.getAssignedTo())) {
+			if (mineOnly && !currentUser.equals(createdBy) && !currentUser.equals(assignedTo)) {
 				continue;
 			}
-			shownTasks.add(t);
+			shownTasks.add(currentTask);
 			tableModel.addRow(new Object[] {
-					t.getName(),
-					t.getDescription(),
-					t.getDateCreated(),
-					t.getPriority(),
-					t.getStatus(),
-					t.getAssignedTo() == null ? TaskDialog.NOBODY : t.getAssignedTo(),
-					t.getCreatedBy()
+					currentTask.getField(task.Field.NAME),
+					currentTask.getField(task.Field.DESCRIPTION),
+					currentTask.getField(task.Field.DATE_CREATED),
+					currentTask.getField(task.Field.PRIORITY),
+					status,
+					assignedTo == null ? TaskForm.NOBODY : assignedTo,
+					createdBy
 			});
-			if (t.getStatus() == task.Status.WIP) {
+			if (status == task.Status.WIP) {
 				inProgress++;
-			} else if (t.getStatus() == task.Status.COMPLETE) {
+			} else if (status == task.Status.COMPLETE) {
 				completed++;
 			}
 		}
@@ -354,18 +357,18 @@ public class MainWindow extends JFrame {
 		progressLabel.setText(inProgress + " in progress, " + completed + " completed");
 	}
 
-	// turns the Sort by choice into the field name TaskList.sortBy wants
-	private String sortFieldName(String choice) {
+	// turns the Sort by choice into the task.Field TaskList.sortBy wants
+	private task.Field sortFieldName(String choice) {
 		if ("Priority".equals(choice)) {
-			return "priority";
+			return task.Field.PRIORITY;
 		}
 		if ("Status".equals(choice)) {
-			return "status";
+			return task.Field.STATUS;
 		}
 		if ("Date created".equals(choice)) {
-			return "datecreated";
+			return task.Field.DATE_CREATED;
 		}
-		return "name";
+		return task.Field.NAME;
 	}
 
 	// the task on the selected row, or null (with a message) if nothing is selected
@@ -394,77 +397,78 @@ public class MainWindow extends JFrame {
 	// ---------- actions ----------
 
 	private void newTask() {
-		TaskDialog dialog = new TaskDialog(this, null, currentUser, usernames());
-		dialog.setVisible(true);
-		if (!dialog.isSaved()) {
+		TaskForm taskForm = new TaskForm(this, null, currentUser, usernames());
+		taskForm.setVisible(true);
+		if (!taskForm.isSaved()) {
 			return;
 		}
-		task created = tasks.addTask(dialog.getTaskName(), dialog.getDescriptionText(), currentUser, dialog.getPriority());
-		tasks.assignTask(created.getId(), dialog.getAssignee());
-		tasks.changeStatus(created.getId(), dialog.getStatus());
+		task created = tasks.addTask(taskForm.getTaskName(), taskForm.getDescriptionText(), currentUser, null, taskForm.getPriority());
+		tasks.assignTask(created.getId(), taskForm.getAssignee());
+		tasks.changeStatus(created.getId(), taskForm.getStatus());
 		refreshTable();
 	}
 
 	private void editTask() {
-		task t = selectedTask();
-		if (t == null) {
+		task chosenTask = selectedTask();
+		if (chosenTask == null) {
 			return;
 		}
-		TaskDialog dialog = new TaskDialog(this, t, currentUser, usernames());
-		dialog.setVisible(true);
-		if (!dialog.isSaved()) {
+		TaskForm taskForm = new TaskForm(this, chosenTask, currentUser, usernames());
+		taskForm.setVisible(true);
+		if (!taskForm.isSaved()) {
 			return;
 		}
-		t.setName(dialog.getTaskName());
-		t.setDescription(dialog.getDescriptionText());
-		t.setPriority(dialog.getPriority());
-		tasks.assignTask(t.getId(), dialog.getAssignee());
-		if (dialog.getStatus() != t.getStatus()) {
-			tasks.changeStatus(t.getId(), dialog.getStatus());
+		chosenTask.setField(task.Field.NAME, taskForm.getTaskName());
+		chosenTask.setField(task.Field.DESCRIPTION, taskForm.getDescriptionText());
+		chosenTask.setField(task.Field.PRIORITY, taskForm.getPriority());
+		tasks.assignTask(chosenTask.getId(), taskForm.getAssignee());
+		if (taskForm.getStatus() != chosenTask.getField(task.Field.STATUS)) {
+			tasks.changeStatus(chosenTask.getId(), taskForm.getStatus());
 		}
 		refreshTable();
 	}
 
 	private void changeStatus() {
-		task t = selectedTask();
-		if (t == null) {
+		task chosenTask = selectedTask();
+		if (chosenTask == null) {
 			return;
 		}
-		task.Status picked = (task.Status) JOptionPane.showInputDialog(this, "New status for \"" + t.getName() + "\":",
-				"Change Status", JOptionPane.PLAIN_MESSAGE, null, task.Status.values(), t.getStatus());
-		if (picked != null && picked != t.getStatus()) {
-			tasks.changeStatus(t.getId(), picked);
+		task.Status picked = (task.Status) JOptionPane.showInputDialog(this, "New status for \"" + chosenTask.getField(task.Field.NAME) + "\":",
+				"Change Status", JOptionPane.PLAIN_MESSAGE, null, task.Status.values(), chosenTask.getField(task.Field.STATUS));
+		if (picked != null && picked != chosenTask.getField(task.Field.STATUS)) {
+			tasks.changeStatus(chosenTask.getId(), picked);
 			refreshTable();
 		}
 	}
 
 	private void assignTask() {
-		task t = selectedTask();
-		if (t == null) {
+		task chosenTask = selectedTask();
+		if (chosenTask == null) {
 			return;
 		}
 		String[] names = usernames();
 		String[] choices = new String[names.length + 1];
-		choices[0] = TaskDialog.NOBODY;
+		choices[0] = TaskForm.NOBODY;
 		System.arraycopy(names, 0, choices, 1, names.length);
-		String current = t.getAssignedTo() == null ? TaskDialog.NOBODY : t.getAssignedTo();
-		String picked = (String) JOptionPane.showInputDialog(this, "Assign \"" + t.getName() + "\" to:",
+		String assigned = (String) chosenTask.getField(task.Field.ASSIGNED_TO);
+		String current = assigned == null ? TaskForm.NOBODY : assigned;
+		String picked = (String) JOptionPane.showInputDialog(this, "Assign \"" + chosenTask.getField(task.Field.NAME) + "\" to:",
 				"Assign Task", JOptionPane.PLAIN_MESSAGE, null, choices, current);
 		if (picked != null) {
-			tasks.assignTask(t.getId(), TaskDialog.NOBODY.equals(picked) ? null : picked);
+			tasks.assignTask(chosenTask.getId(), TaskForm.NOBODY.equals(picked) ? null : picked);
 			refreshTable();
 		}
 	}
 
 	private void deleteTask() {
-		task t = selectedTask();
-		if (t == null) {
+		task chosenTask = selectedTask();
+		if (chosenTask == null) {
 			return;
 		}
-		int answer = JOptionPane.showConfirmDialog(this, "Delete \"" + t.getName() + "\"? This can't be undone.",
+		int answer = JOptionPane.showConfirmDialog(this, "Delete \"" + chosenTask.getField(task.Field.NAME) + "\"? This can't be undone.",
 				"Delete Task", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		if (answer == JOptionPane.YES_OPTION) {
-			tasks.removeTask(t.getId());
+			tasks.removeTask(chosenTask.getId());
 			refreshTable();
 		}
 	}

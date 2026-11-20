@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 /**
  * DatabaseHandler is the connection to the SQLite database (using JDBC).
- * Think of it as a table of tasks where you can read or change one value at a time.
+ * It's a table of tasks where you can read or change one value at a time.
  * It doesn't know about TaskList, whatever connects the two calls this class.
  *
  * Values use the same types as task.getField():
@@ -35,6 +35,7 @@ public class DatabaseHandler {
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile);
             createTable();
         } catch (SQLException e) {
+            close();   // don't leave the connection open if making the table failed
             throw new RuntimeException("Couldn't open the database: " + e.getMessage(), e);
         }
     }
@@ -54,8 +55,8 @@ public class DatabaseHandler {
                 + "due_date TEXT, "
                 + "priority TEXT NOT NULL DEFAULT 'LOW', "
                 + "status TEXT NOT NULL DEFAULT 'NOT_STARTED')";
-        try (Statement st = connection.createStatement()) {
-            st.execute(sql);
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sql);
         }
     }
 
@@ -64,12 +65,12 @@ public class DatabaseHandler {
     // adds a new task to the table with the default values and gives back its id
     // use setField after this to fill it in
     public int insertRow() {
-        try (Statement st = connection.createStatement()) {
-            st.executeUpdate("INSERT INTO tasks DEFAULT VALUES");
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("INSERT INTO tasks DEFAULT VALUES");
             // ask SQLite for the id it just made (getGeneratedKeys doesn't work on newer drivers)
-            try (ResultSet rs = st.executeQuery("SELECT last_insert_rowid()")) {
-                rs.next();
-                return rs.getInt(1);
+            try (ResultSet results = statement.executeQuery("SELECT last_insert_rowid()")) {
+                results.next();
+                return results.getInt(1);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Couldn't add a task: " + e.getMessage(), e);
@@ -77,21 +78,21 @@ public class DatabaseHandler {
     }
 
     // deletes the task with this id, returns false if there wasn't one
-    public boolean deleteRow(int id) {
-        try (PreparedStatement ps = connection.prepareStatement("DELETE FROM tasks WHERE id = ?")) {
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
+    public boolean deleteRow(int taskId) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM tasks WHERE id = ?")) {
+            preparedStatement.setInt(1, taskId);
+            return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Couldn't delete the task: " + e.getMessage(), e);
         }
     }
 
     // true if there is a task with this id
-    public boolean rowExists(int id) {
-        try (PreparedStatement ps = connection.prepareStatement("SELECT id FROM tasks WHERE id = ?")) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
+    public boolean rowExists(int taskId) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT id FROM tasks WHERE id = ?")) {
+            preparedStatement.setInt(1, taskId);
+            try (ResultSet results = preparedStatement.executeQuery()) {
+                return results.next();
             }
         } catch (SQLException e) {
             throw new RuntimeException("Couldn't look up the task: " + e.getMessage(), e);
@@ -101,10 +102,10 @@ public class DatabaseHandler {
     // gives back the ids of every task, oldest first
     public ArrayList<Integer> getAllIds() {
         ArrayList<Integer> ids = new ArrayList<Integer>();
-        try (Statement st = connection.createStatement();
-                ResultSet rs = st.executeQuery("SELECT id FROM tasks ORDER BY id")) {
-            while (rs.next()) {
-                ids.add(rs.getInt(1));
+        try (Statement statement = connection.createStatement();
+                ResultSet results = statement.executeQuery("SELECT id FROM tasks ORDER BY id")) {
+            while (results.next()) {
+                ids.add(results.getInt(1));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Couldn't load the task ids: " + e.getMessage(), e);
@@ -116,15 +117,15 @@ public class DatabaseHandler {
 
     // gives back one value of a task, throws an error if there is no task with that id
     // an empty value (like no due date) comes back as null
-    public Object getField(int id, task.Field field) {
+    public Object getField(int taskId, task.Field field) {
         String sql = "SELECT " + columnName(field) + " FROM tasks WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    throw new IllegalArgumentException("No task with id " + id);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, taskId);
+            try (ResultSet results = preparedStatement.executeQuery()) {
+                if (!results.next()) {
+                    throw new IllegalArgumentException("No task with id " + taskId);
                 }
-                return textToValue(field, rs.getString(1));
+                return textToValue(field, results.getString(1));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Couldn't read the task: " + e.getMessage(), e);
@@ -134,14 +135,14 @@ public class DatabaseHandler {
     // changes one value of a task, throws an error if there is no task with that id
     // the value has to be the right type for the field (see the top of this file),
     // otherwise this throws a ClassCastException
-    public void setField(int id, task.Field field, Object value) {
+    public void setField(int taskId, task.Field field, Object value) {
         String text = valueToText(field, value);
         String sql = "UPDATE tasks SET " + columnName(field) + " = ? WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, text);
-            ps.setInt(2, id);
-            if (ps.executeUpdate() == 0) {
-                throw new IllegalArgumentException("No task with id " + id);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, text);
+            preparedStatement.setInt(2, taskId);
+            if (preparedStatement.executeUpdate() == 0) {
+                throw new IllegalArgumentException("No task with id " + taskId);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Couldn't change the task: " + e.getMessage(), e);

@@ -45,9 +45,9 @@ public class TaskList {
     // ---------- finding and removing ----------
 
     // find a task by its id, returns null if we can't find it
-    public task findById(int id) {
+    public task findById(int taskId) {
         for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).getId() == id) {
+            if (tasks.get(i).getId() == taskId) {
                 return tasks.get(i);
             }
         }
@@ -55,8 +55,8 @@ public class TaskList {
     }
 
     // delete a task, returns true if it was deleted
-    public boolean removeTask(int id) {
-        task found = findById(id);
+    public boolean removeTask(int taskId) {
+        task found = findById(taskId);
         if (found == null) {
             return false;
         }
@@ -67,8 +67,8 @@ public class TaskList {
     // ---------- changing tasks ----------
 
     // assign a task to a user, returns false if the task doesn't exist
-    public boolean assignTask(int id, String username) {
-        task found = findById(id);
+    public boolean assignTask(int taskId, String username) {
+        task found = findById(taskId);
         if (found == null) {
             return false;
         }
@@ -78,8 +78,8 @@ public class TaskList {
 
     // changes the status of a task, returns false if the task doesn't exist
     // finishing a task saves today's date, moving it back to unfinished clears the date
-    public boolean changeStatus(int id, task.Status newStatus) {
-        task found = findById(id);
+    public boolean changeStatus(int taskId, task.Status newStatus) {
+        task found = findById(taskId);
         if (found == null) {
             return false;
         }
@@ -120,17 +120,17 @@ public class TaskList {
         ArrayList<task> sorted = new ArrayList<task>(tasks);
 
         // bubble sort: keep swapping neighbors that are in the wrong order
-        for (int i = 0; i < sorted.size() - 1; i++) {
-            for (int j = 0; j < sorted.size() - 1 - i; j++) {
-                task first = sorted.get(j);
-                task second = sorted.get(j + 1);
+        for (int round = 0; round < sorted.size() - 1; round++) {
+            for (int position = 0; position < sorted.size() - 1 - round; position++) {
+                task first = sorted.get(position);
+                task second = sorted.get(position + 1);
                 int result = compareTasks(first, second, field);
                 if (!ascending) {
                     result = -result;
                 }
                 if (result > 0) {
-                    sorted.set(j, second);
-                    sorted.set(j + 1, first);
+                    sorted.set(position, second);
+                    sorted.set(position + 1, first);
                 }
             }
         }
@@ -139,21 +139,21 @@ public class TaskList {
 
     // compares two tasks by one field
     // negative = a is first, positive = b is first, 0 = same
-    private int compareTasks(task a, task b, task.Field field) {
+    private int compareTasks(task firstTask, task secondTask, task.Field field) {
         // priority and status are compared as enums, because alphabetical order
         // (HIGH, LOW, MEDIUM) is not the real order (LOW, MEDIUM, HIGH)
         if (field == task.Field.PRIORITY) {
-            task.Priority priorityA = (task.Priority) a.getField(field);
-            task.Priority priorityB = (task.Priority) b.getField(field);
+            task.Priority priorityA = (task.Priority) firstTask.getField(field);
+            task.Priority priorityB = (task.Priority) secondTask.getField(field);
             return priorityA.compareTo(priorityB);
         }
         if (field == task.Field.STATUS) {
-            task.Status statusA = (task.Status) a.getField(field);
-            task.Status statusB = (task.Status) b.getField(field);
+            task.Status statusA = (task.Status) firstTask.getField(field);
+            task.Status statusB = (task.Status) secondTask.getField(field);
             return statusA.compareTo(statusB);
         }
         // everything else is compared as lowercase text
-        return a.getFieldAsText(field).compareTo(b.getFieldAsText(field));
+        return firstTask.getFieldAsText(field).compareTo(secondTask.getFieldAsText(field));
     }
 
     // ---------- other ----------

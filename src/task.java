@@ -22,7 +22,7 @@ public class task {
         NAME, DESCRIPTION, CREATED_BY, ASSIGNED_TO, DATE_CREATED, DATE_FINISHED, DUE_DATE, PRIORITY, STATUS
     }
 
-    private int id;                   // the database gives this, 0 means it hasn't been saved yet
+    private int taskId;                   // the database gives this, 0 means it hasn't been saved yet
     private LocalDate dateCreated;
     private LocalDate dateFinished;   // null until the task is finished
     private LocalDate dueDate;        // null if the task has no due date
@@ -36,7 +36,7 @@ public class task {
 
     // constructor for making a brand new task
     public task(String name, String description, String createdBy, LocalDate dueDate, Priority priority) {
-        this.id = 0;
+        this.taskId = 0;
         this.dateCreated = LocalDate.now();
         this.dateFinished = null;
         this.dueDate = dueDate;
@@ -51,10 +51,10 @@ public class task {
     }
 
     // constructor for when we load a task that was already saved
-    public task(int id, String name, String description, String createdBy, String assignedTo,
+    public task(int taskId, String name, String description, String createdBy, String assignedTo,
             LocalDate dateCreated, LocalDate dateFinished, LocalDate dueDate, Priority priority,
             Status status) {
-        this.id = id;
+        this.taskId = taskId;
         this.dateCreated = dateCreated;
         this.dateFinished = dateFinished;
         this.dueDate = dueDate;
@@ -71,11 +71,11 @@ public class task {
     // the id is not one of the fields, it just belongs to the database
 
     public int getId() {
-        return id;
+        return taskId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(int taskId) {
+        this.taskId = taskId;
     }
 
     // gives back the value of a field

@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 public class User {
 
-	private int id; // id from the database
+	private int userId; // id from the database
 	private String username;
 	private String email;
 	private String passwordHash; // never store the plain password
@@ -20,8 +20,8 @@ public class User {
 	}
 
 	// constructor for when we load a user from the database
-	public User(int id, String username, String email, String passwordHash, LocalDate dateCreated) {
-		this.id = id;
+	public User(int userId, String username, String email, String passwordHash, LocalDate dateCreated) {
+		this.userId = userId;
 		this.username = username;
 		this.email = email;
 		this.passwordHash = passwordHash;
@@ -30,24 +30,24 @@ public class User {
 
 	// builds a User from the current row of a JDBC ResultSet
 	// column names match the users table in schema.sql
-	public static User fromResultSet(ResultSet rs) throws SQLException {
-		Date created = rs.getDate("date_created");
+	public static User fromResultSet(ResultSet results) throws SQLException {
+		Date created = results.getDate("date_created");
 		return new User(
-				rs.getInt("id"),
-				rs.getString("username"),
-				rs.getString("email"),
-				rs.getString("password_hash"),
+				results.getInt("id"),
+				results.getString("username"),
+				results.getString("email"),
+				results.getString("password_hash"),
 				created == null ? null : created.toLocalDate());
 	}
 
 	// getters and setters
 
 	public int getId() {
-		return id;
+		return userId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setId(int userId) {
+		this.userId = userId;
 	}
 
 	public String getUsername() {

@@ -10,17 +10,17 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 /**
- * Dialog for making a new account. Saves the user through UserDatabase.
+ * Pop-up window for making a new account.
+ * This class only builds the window. What the buttons do is in AccountCreationFunctionality.
  * Built so WindowBuilder can open it in the Design tab.
  */
-public class RegisterDialog extends JDialog {
+public class AccountCreationWindow extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 
@@ -30,17 +30,16 @@ public class RegisterDialog extends JDialog {
 	private JPasswordField passwordField;
 	private JPasswordField confirmField;
 
-	private UserDatabase users;
-	private User createdUser;   // stays null if the dialog is cancelled
+	private AccountCreationFunctionality functionality;   // what the buttons do
 
 	// WindowBuilder uses this constructor to show the design
-	public RegisterDialog() {
+	public AccountCreationWindow() {
 		this(null, null);
 	}
 
-	public RegisterDialog(Frame owner, UserDatabase users) {
+	public AccountCreationWindow(Frame owner, UserDatabaseHandler users) {
 		super(owner, "Create Account", true);
-		this.users = users;
+		functionality = new AccountCreationFunctionality(this, users);
 
 		setBounds(100, 100, 420, 400);
 		Theme.decorate(getRootPane());
@@ -125,56 +124,42 @@ public class RegisterDialog extends JDialog {
 
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dispose();
+			public void actionPerformed(ActionEvent event) {
+				functionality.cancel();
 			}
 		});
 		buttonPane.add(cancelButton);
 
 		JButton createButton = new JButton("Create Account");
 		createButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				createAccount();
+			public void actionPerformed(ActionEvent event) {
+				functionality.createAccount();
 			}
 		});
 		buttonPane.add(createButton);
 		getRootPane().setDefaultButton(createButton);
 	}
 
-	private void createAccount() {
-		String username = usernameField.getText().trim();
-		String email = emailField.getText().trim();
-		String password = new String(passwordField.getPassword());
-		String confirm = new String(confirmField.getPassword());
+	// ---------- used by AccountCreationFunctionality to read the boxes ----------
 
-		if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-			showError("Fill in every field.");
-			return;
-		}
-		if (!email.contains("@")) {
-			showError("Enter a valid email address.");
-			return;
-		}
-		if (!password.equals(confirm)) {
-			showError("The passwords don't match.");
-			return;
-		}
-		User user = new User(username, email, LoginFrame.hashPassword(password));
-		if (!users.addUser(user)) {
-			showError("That username or email is already taken.");
-			return;
-		}
-		createdUser = user;
-		JOptionPane.showMessageDialog(this, "Account created. You can log in now.");
-		dispose();
+	public String getEnteredUsername() {
+		return usernameField.getText().trim();
 	}
 
-	private void showError(String message) {
-		JOptionPane.showMessageDialog(this, message, "Create Account", JOptionPane.ERROR_MESSAGE);
+	public String getEnteredEmail() {
+		return emailField.getText().trim();
 	}
 
-	// the user that was saved, or null if the dialog was cancelled
+	public String getEnteredPassword() {
+		return new String(passwordField.getPassword());
+	}
+
+	public String getEnteredConfirmPassword() {
+		return new String(confirmField.getPassword());
+	}
+
+	// the user that was saved, or null if the window was closed without making an account
 	public User getCreatedUser() {
-		return createdUser;
+		return functionality.getCreatedUser();
 	}
 }

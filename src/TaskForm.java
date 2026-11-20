@@ -21,12 +21,12 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 /**
- * Dialog for adding a new task or editing one.
+ * Pop-up window for adding a new task or editing one.
  * It only collects the values. MainWindow reads them with the getters and updates the TaskList,
  * so the TaskList rules (like setting the date finished) stay in one place.
  * Built so WindowBuilder can open it in the Design tab.
  */
-public class TaskDialog extends JDialog {
+public class TaskForm extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 
@@ -45,13 +45,13 @@ public class TaskDialog extends JDialog {
 	private boolean saved = false;
 
 	// WindowBuilder uses this constructor to show the design
-	public TaskDialog() {
+	public TaskForm() {
 		this(null, null, "", new String[0]);
 	}
 
 	// editing = the task to edit, or null to make a new one
 	// usernames = everyone a task can be assigned to
-	public TaskDialog(Frame owner, task editing, String currentUser, String[] usernames) {
+	public TaskForm(Frame owner, task editing, String currentUser, String[] usernames) {
 		super(owner, editing == null ? "New Task" : "Edit Task", true);
 
 		setBounds(100, 100, 480, 470);
@@ -215,7 +215,7 @@ public class TaskDialog extends JDialog {
 
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				dispose();
 			}
 		});
@@ -223,7 +223,7 @@ public class TaskDialog extends JDialog {
 
 		JButton saveButton = new JButton("Save");
 		saveButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent event) {
 				save();
 			}
 		});
@@ -244,15 +244,16 @@ public class TaskDialog extends JDialog {
 			assignedBox.setSelectedItem(currentUser);
 			return;
 		}
-		nameField.setText(editing.getName());
-		descriptionArea.setText(editing.getDescription());
-		priorityBox.setSelectedItem(editing.getPriority());
-		statusBox.setSelectedItem(editing.getStatus());
-		assignedBox.setSelectedItem(editing.getAssignedTo() == null ? NOBODY : editing.getAssignedTo());
-		createdByValue.setText(editing.getCreatedBy());
-		dateCreatedValue.setText(String.valueOf(editing.getDateCreated()));
-		if (editing.getDateFinished() != null) {
-			dateFinishedValue.setText(editing.getDateFinished().toString());
+		nameField.setText((String) editing.getField(task.Field.NAME));
+		descriptionArea.setText((String) editing.getField(task.Field.DESCRIPTION));
+		priorityBox.setSelectedItem(editing.getField(task.Field.PRIORITY));
+		statusBox.setSelectedItem(editing.getField(task.Field.STATUS));
+		String assigned = (String) editing.getField(task.Field.ASSIGNED_TO);
+		assignedBox.setSelectedItem(assigned == null ? NOBODY : assigned);
+		createdByValue.setText((String) editing.getField(task.Field.CREATED_BY));
+		dateCreatedValue.setText(String.valueOf(editing.getField(task.Field.DATE_CREATED)));
+		if (editing.getField(task.Field.DATE_FINISHED) != null) {
+			dateFinishedValue.setText(editing.getField(task.Field.DATE_FINISHED).toString());
 		}
 	}
 
