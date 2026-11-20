@@ -30,8 +30,8 @@ public class LoginFrameFunctionality {
 			frame.clearPassword();
 			return;
 		}
-		MainWindow mainWindow = new MainWindow(username, tasks, users);
-		mainWindow.setVisible(true);
+		MainWindowFrame mainWindowFrame = new MainWindowFrame(username, tasks, users);
+		mainWindowFrame.setVisible(true);
 		frame.dispose();
 	}
 

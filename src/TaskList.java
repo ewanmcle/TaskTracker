@@ -2,34 +2,77 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
- * TaskList is a list of task objects.
+ * TaskList is the list of task objects the program works with.
  * It can add, find, remove and change tasks, and it can sort and filter them.
- * Right now the tasks only live in memory, saving them to a database comes later.
+ *
+ * Every change to a task goes through this class, and each change is also saved to the
+ * SQLite database through DatabaseHandler, so the list and the database always match.
+ * A TaskList made with a DatabaseHandler starts by loading every task already saved.
+ * A TaskList made without one (new TaskList()) only keeps tasks in memory, which is
+ * handy for WindowBuilder's Design tab and for tests.
  */
 public class TaskList {
 
     private ArrayList<task> tasks;
-    private int nextId;   // the id the next new task will get
+    private DatabaseHandler database;   // null when the tasks are only kept in memory
+    private int nextId;                 // the id the next new task gets when there is no database
 
+    // keeps the tasks in memory only, nothing is saved
     public TaskList() {
         tasks = new ArrayList<task>();
+        database = null;
         nextId = 1;
+    }
+
+    // saves every change to the database, and starts by loading every task already saved there
+    public TaskList(DatabaseHandler database) {
+        tasks = new ArrayList<task>();
+        this.database = database;
+        nextId = 1;
+        loadFromDatabase();
+    }
+
+    // ---------- loading ----------
+
+    // makes a task object for every row in the database and puts it in the list
+    private void loadFromDatabase() {
+        ArrayList<Integer> taskIds = database.getAllIds();
+        for (int taskId : taskIds) {
+            task loadedTask = new task("", "", "", null, task.Priority.LOW);
+            loadedTask.setId(taskId);
+            // copy every field from the database row into the task
+            for (task.Field field : task.Field.values()) {
+                loadedTask.setField(field, database.getField(taskId, field));
+            }
+            tasks.add(loadedTask);
+        }
     }
 
     // ---------- adding tasks ----------
 
-    // adds a task that was already made, gives it an id if it doesn't have one yet
+    // adds a task that was already made and gives it an id
+    // with a database, the database makes the id and every field gets saved
     public void addTask(task newTask) {
         if (newTask == null) {
             throw new IllegalArgumentException("Task can't be null");
         }
-        if (newTask.getId() == 0) {
-            newTask.setId(nextId);
-            nextId++;
-        } else if (findById(newTask.getId()) != null) {
+        if (newTask.getId() != 0 && findById(newTask.getId()) != null) {
             throw new IllegalArgumentException("A task with that id already exists");
-        } else if (newTask.getId() >= nextId) {
-            nextId = newTask.getId() + 1;
+        }
+
+        if (database != null) {
+            // the database makes a new row and its id, then every field is saved into it
+            int newId = database.insertRow();
+            newTask.setId(newId);
+            saveAllFields(newTask);
+        } else {
+            // no database, so the list hands out the ids itself
+            if (newTask.getId() == 0) {
+                newTask.setId(nextId);
+                nextId++;
+            } else if (newTask.getId() >= nextId) {
+                nextId = newTask.getId() + 1;
+            }
         }
         tasks.add(newTask);
     }
@@ -54,17 +97,21 @@ public class TaskList {
         return null;
     }
 
-    // delete a task, returns true if it was deleted
+    // delete a task from the list and the database, returns true if it was deleted
     public boolean removeTask(int taskId) {
         task found = findById(taskId);
         if (found == null) {
             return false;
+        }
+        if (database != null) {
+            database.deleteRow(taskId);
         }
         tasks.remove(found);
         return true;
     }
 
     // ---------- changing tasks ----------
+    // each of these changes the task and then saves what changed
 
     // assign a task to a user, returns false if the task doesn't exist
     public boolean assignTask(int taskId, String username) {
@@ -73,6 +120,7 @@ public class TaskList {
             return false;
         }
         found.setField(task.Field.ASSIGNED_TO, username);
+        saveField(found, task.Field.ASSIGNED_TO);
         return true;
     }
 
@@ -89,6 +137,22 @@ public class TaskList {
         } else {
             found.setField(task.Field.DATE_FINISHED, null);
         }
+        saveField(found, task.Field.STATUS);
+        saveField(found, task.Field.DATE_FINISHED);
+        return true;
+    }
+
+    // changes any one field of a task (like its name) and saves it,
+    // returns false if the task doesn't exist
+    // the value has to be the right type for the field (see task.getField)
+    // use changeStatus for the status, so the date finished stays right
+    public boolean changeField(int taskId, task.Field field, Object value) {
+        task found = findById(taskId);
+        if (found == null) {
+            return false;
+        }
+        found.setField(field, value);
+        saveField(found, field);
         return true;
     }
 
@@ -154,6 +218,23 @@ public class TaskList {
         }
         // everything else is compared as lowercase text
         return firstTask.getFieldAsText(field).compareTo(secondTask.getFieldAsText(field));
+    }
+
+    // ---------- saving ----------
+
+    // saves one field of a task to the database (does nothing when there is no database)
+    private void saveField(task changedTask, task.Field field) {
+        if (database == null) {
+            return;
+        }
+        database.setField(changedTask.getId(), field, changedTask.getField(field));
+    }
+
+    // saves every field of a task to the database
+    private void saveAllFields(task changedTask) {
+        for (task.Field field : task.Field.values()) {
+            saveField(changedTask, field);
+        }
     }
 
     // ---------- other ----------

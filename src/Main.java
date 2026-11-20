@@ -9,7 +9,7 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				Theme.setupSaved();
-				LoginFrame frame = new LoginFrame(new UserDatabaseHandler(), new TaskList());
+				LoginFrame frame = new LoginFrame(new UserDatabaseHandler(), new TaskList(new DatabaseHandler()));
 				frame.setVisible(true);
 			}
 		});

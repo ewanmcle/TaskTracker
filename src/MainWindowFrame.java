@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -18,7 +17,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -30,14 +28,16 @@ import javax.swing.table.DefaultTableModel;
 
 /**
  * The main window: a table of tasks with buttons to add, edit, change and delete them.
- * All changes go through TaskList.
+ * This class only builds the window. What the buttons, menus and controls do is in
+ * MainWindowFunctionality.
  * Built so WindowBuilder can open it in the Design tab.
  */
-public class MainWindow extends JFrame {
+public class MainWindowFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String ALL_STATUSES = "All statuses";
+	// the first choice in the Show box, MainWindowFunctionality checks for it
+	public static final String ALL_STATUSES = "All statuses";
 	private static final String[] COLUMNS = {"Name", "Description", "Created", "Priority", "Status", "Assigned to", "Created by"};
 
 	private JPanel contentPane;
@@ -52,20 +52,16 @@ public class MainWindow extends JFrame {
 	private JCheckBoxMenuItem darkModeItem;
 	private JToggleButton darkModeButton;
 
-	private String currentUser;
-	private TaskList tasks;
-	private UserDatabaseHandler users;
-	private ArrayList<task> shownTasks = new ArrayList<task>();   // the tasks in the table, same order as the rows
+	private MainWindowFunctionality functionality;   // what the buttons, menus and controls do
+	private boolean finishedBuilding;                // becomes true once every control exists
 
 	// WindowBuilder uses this constructor to show the design
-	public MainWindow() {
+	public MainWindowFrame() {
 		this("ewan", new TaskList(), null);
 	}
 
-	public MainWindow(String currentUser, TaskList tasks, UserDatabaseHandler users) {
-		this.currentUser = currentUser;
-		this.tasks = tasks;
-		this.users = users;
+	public MainWindowFrame(String currentUser, TaskList tasks, UserDatabaseHandler users) {
+		functionality = new MainWindowFunctionality(this, currentUser, tasks, users);
 
 		setTitle("TaskTracker | " + currentUser);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -81,7 +77,7 @@ public class MainWindow extends JFrame {
 		JMenuItem logOutItem = new JMenuItem("Log Out");
 		logOutItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				logOut();
+				functionality.logOut();
 			}
 		});
 		fileMenu.add(logOutItem);
@@ -89,7 +85,7 @@ public class MainWindow extends JFrame {
 		JMenuItem exitItem = new JMenuItem("Exit");
 		exitItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				System.exit(0);
+				functionality.exit();
 			}
 		});
 		fileMenu.add(exitItem);
@@ -100,7 +96,7 @@ public class MainWindow extends JFrame {
 		JMenuItem newTaskItem = new JMenuItem("New Task...");
 		newTaskItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				newTask();
+				functionality.newTask();
 			}
 		});
 		taskMenu.add(newTaskItem);
@@ -108,7 +104,7 @@ public class MainWindow extends JFrame {
 		JMenuItem editTaskItem = new JMenuItem("Edit Task...");
 		editTaskItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				editTask();
+				functionality.editTask();
 			}
 		});
 		taskMenu.add(editTaskItem);
@@ -116,7 +112,7 @@ public class MainWindow extends JFrame {
 		JMenuItem deleteTaskItem = new JMenuItem("Delete Task");
 		deleteTaskItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				deleteTask();
+				functionality.deleteTask();
 			}
 		});
 		taskMenu.add(deleteTaskItem);
@@ -130,7 +126,7 @@ public class MainWindow extends JFrame {
 				Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() | KeyEvent.SHIFT_DOWN_MASK));
 		darkModeItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				setDarkMode(darkModeItem.isSelected());
+				functionality.setDarkMode(darkModeItem.isSelected());
 			}
 		});
 		viewMenu.add(darkModeItem);
@@ -141,7 +137,7 @@ public class MainWindow extends JFrame {
 		JMenuItem aboutItem = new JMenuItem("About TaskTracker");
 		aboutItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				JOptionPane.showMessageDialog(MainWindow.this, "TaskTracker\nA simple team task tracker.");
+				functionality.showAbout();
 			}
 		});
 		helpMenu.add(aboutItem);
@@ -166,7 +162,7 @@ public class MainWindow extends JFrame {
 		newButton.putClientProperty("FlatLaf.styleClass", "primary");
 		newButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				newTask();
+				functionality.newTask();
 			}
 		});
 		actionsPanel.add(newButton);
@@ -174,7 +170,7 @@ public class MainWindow extends JFrame {
 		JButton editButton = new JButton("Edit");
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				editTask();
+				functionality.editTask();
 			}
 		});
 		actionsPanel.add(editButton);
@@ -182,7 +178,7 @@ public class MainWindow extends JFrame {
 		JButton statusButton = new JButton("Change Status...");
 		statusButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				changeStatus();
+				functionality.changeStatus();
 			}
 		});
 		actionsPanel.add(statusButton);
@@ -190,7 +186,7 @@ public class MainWindow extends JFrame {
 		JButton assignButton = new JButton("Assign...");
 		assignButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				assignTask();
+				functionality.assignTask();
 			}
 		});
 		actionsPanel.add(assignButton);
@@ -199,7 +195,7 @@ public class MainWindow extends JFrame {
 		deleteButton.putClientProperty("FlatLaf.styleClass", "danger");
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				deleteTask();
+				functionality.deleteTask();
 			}
 		});
 		actionsPanel.add(deleteButton);
@@ -216,7 +212,7 @@ public class MainWindow extends JFrame {
 		statusFilterBox.setModel(new DefaultComboBoxModel<String>(new String[] {ALL_STATUSES, "NOT_STARTED", "WIP", "COMPLETE"}));
 		statusFilterBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				refreshTable();
+				functionality.refreshTable();
 			}
 		});
 		viewPanel.add(statusFilterBox);
@@ -225,7 +221,7 @@ public class MainWindow extends JFrame {
 		myTasksCheck.setSelected(true);
 		myTasksCheck.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				refreshTable();
+				functionality.refreshTable();
 			}
 		});
 		viewPanel.add(myTasksCheck);
@@ -237,7 +233,7 @@ public class MainWindow extends JFrame {
 		sortBox.setModel(new DefaultComboBoxModel<String>(new String[] {"Name", "Priority", "Status", "Date created"}));
 		sortBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				refreshTable();
+				functionality.refreshTable();
 			}
 		});
 		viewPanel.add(sortBox);
@@ -262,7 +258,7 @@ public class MainWindow extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent event) {
 				if (event.getClickCount() == 2) {
-					editTask();
+					functionality.editTask();
 				}
 			}
 		});
@@ -301,188 +297,60 @@ public class MainWindow extends JFrame {
 		darkModeButton.setToolTipText("Switch between light and dark mode");
 		darkModeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				setDarkMode(darkModeButton.isSelected());
+				functionality.setDarkMode(darkModeButton.isSelected());
 			}
 		});
 		accountPanel.add(darkModeButton);
 
-		refreshTable();
+		finishedBuilding = true;
+		functionality.refreshTable();
 	}
 
-	// ---------- filling the table ----------
+	// ---------- used by MainWindowFunctionality to read the controls and fill the table ----------
 
-	// rebuilds the table from the TaskList using the Show, My tasks and Sort by controls
-	private void refreshTable() {
-		if (tasks == null || tableModel == null || sortBox == null || statusFilterBox == null || myTasksCheck == null) {
-			return;   // still being built
-		}
-		task.Field sortField = sortFieldName((String) sortBox.getSelectedItem());
-		boolean ascending = sortField != task.Field.PRIORITY;   // show HIGH priority first
-		ArrayList<task> sorted = tasks.sortBy(sortField, ascending);
+	// true once every control exists, the table is only filled after that
+	public boolean isFinishedBuilding() {
+		return finishedBuilding;
+	}
 
-		String statusFilter = (String) statusFilterBox.getSelectedItem();
-		boolean mineOnly = myTasksCheck.isSelected();
+	// what is picked in the Sort by box, like "Priority"
+	public String getSortChoice() {
+		return (String) sortBox.getSelectedItem();
+	}
 
-		shownTasks.clear();
+	// what is picked in the Show box, like "WIP" or ALL_STATUSES
+	public String getStatusFilterChoice() {
+		return (String) statusFilterBox.getSelectedItem();
+	}
+
+	public boolean isMyTasksOnly() {
+		return myTasksCheck.isSelected();
+	}
+
+	// the number of the selected row, or -1 if no row is selected
+	public int getSelectedRow() {
+		return table.getSelectedRow();
+	}
+
+	public void clearTable() {
 		tableModel.setRowCount(0);
-		int inProgress = 0;
-		int completed = 0;
-		for (task currentTask : sorted) {
-			task.Status status = (task.Status) currentTask.getField(task.Field.STATUS);
-			String createdBy = (String) currentTask.getField(task.Field.CREATED_BY);
-			String assignedTo = (String) currentTask.getField(task.Field.ASSIGNED_TO);
-			if (!ALL_STATUSES.equals(statusFilter) && !status.name().equals(statusFilter)) {
-				continue;
-			}
-			if (mineOnly && !currentUser.equals(createdBy) && !currentUser.equals(assignedTo)) {
-				continue;
-			}
-			shownTasks.add(currentTask);
-			tableModel.addRow(new Object[] {
-					currentTask.getField(task.Field.NAME),
-					currentTask.getField(task.Field.DESCRIPTION),
-					currentTask.getField(task.Field.DATE_CREATED),
-					currentTask.getField(task.Field.PRIORITY),
-					status,
-					assignedTo == null ? TaskForm.NOBODY : assignedTo,
-					createdBy
-			});
-			if (status == task.Status.WIP) {
-				inProgress++;
-			} else if (status == task.Status.COMPLETE) {
-				completed++;
-			}
-		}
-		countLabel.setText(shownTasks.size() + (shownTasks.size() == 1 ? " task" : " tasks"));
-		progressLabel.setText(inProgress + " in progress, " + completed + " completed");
 	}
 
-	// turns the Sort by choice into the task.Field TaskList.sortBy wants
-	private task.Field sortFieldName(String choice) {
-		if ("Priority".equals(choice)) {
-			return task.Field.PRIORITY;
-		}
-		if ("Status".equals(choice)) {
-			return task.Field.STATUS;
-		}
-		if ("Date created".equals(choice)) {
-			return task.Field.DATE_CREATED;
-		}
-		return task.Field.NAME;
+	public void addTableRow(Object[] row) {
+		tableModel.addRow(row);
 	}
 
-	// the task on the selected row, or null (with a message) if nothing is selected
-	private task selectedTask() {
-		int row = table.getSelectedRow();
-		if (row < 0 || row >= shownTasks.size()) {
-			JOptionPane.showMessageDialog(this, "Select a task first.");
-			return null;
-		}
-		return shownTasks.get(row);
+	public void setCountText(String text) {
+		countLabel.setText(text);
 	}
 
-	// everyone a task can be assigned to
-	private String[] usernames() {
-		if (users == null) {
-			return new String[] {currentUser};
-		}
-		ArrayList<User> all = users.getAllUsers();
-		String[] names = new String[all.size()];
-		for (int i = 0; i < all.size(); i++) {
-			names[i] = all.get(i).getUsername();
-		}
-		return names;
+	public void setProgressText(String text) {
+		progressLabel.setText(text);
 	}
 
-	// ---------- actions ----------
-
-	private void newTask() {
-		TaskForm taskForm = new TaskForm(this, null, currentUser, usernames());
-		taskForm.setVisible(true);
-		if (!taskForm.isSaved()) {
-			return;
-		}
-		task created = tasks.addTask(taskForm.getTaskName(), taskForm.getDescriptionText(), currentUser, null, taskForm.getPriority());
-		tasks.assignTask(created.getId(), taskForm.getAssignee());
-		tasks.changeStatus(created.getId(), taskForm.getStatus());
-		refreshTable();
-	}
-
-	private void editTask() {
-		task chosenTask = selectedTask();
-		if (chosenTask == null) {
-			return;
-		}
-		TaskForm taskForm = new TaskForm(this, chosenTask, currentUser, usernames());
-		taskForm.setVisible(true);
-		if (!taskForm.isSaved()) {
-			return;
-		}
-		chosenTask.setField(task.Field.NAME, taskForm.getTaskName());
-		chosenTask.setField(task.Field.DESCRIPTION, taskForm.getDescriptionText());
-		chosenTask.setField(task.Field.PRIORITY, taskForm.getPriority());
-		tasks.assignTask(chosenTask.getId(), taskForm.getAssignee());
-		if (taskForm.getStatus() != chosenTask.getField(task.Field.STATUS)) {
-			tasks.changeStatus(chosenTask.getId(), taskForm.getStatus());
-		}
-		refreshTable();
-	}
-
-	private void changeStatus() {
-		task chosenTask = selectedTask();
-		if (chosenTask == null) {
-			return;
-		}
-		task.Status picked = (task.Status) JOptionPane.showInputDialog(this, "New status for \"" + chosenTask.getField(task.Field.NAME) + "\":",
-				"Change Status", JOptionPane.PLAIN_MESSAGE, null, task.Status.values(), chosenTask.getField(task.Field.STATUS));
-		if (picked != null && picked != chosenTask.getField(task.Field.STATUS)) {
-			tasks.changeStatus(chosenTask.getId(), picked);
-			refreshTable();
-		}
-	}
-
-	private void assignTask() {
-		task chosenTask = selectedTask();
-		if (chosenTask == null) {
-			return;
-		}
-		String[] names = usernames();
-		String[] choices = new String[names.length + 1];
-		choices[0] = TaskForm.NOBODY;
-		System.arraycopy(names, 0, choices, 1, names.length);
-		String assigned = (String) chosenTask.getField(task.Field.ASSIGNED_TO);
-		String current = assigned == null ? TaskForm.NOBODY : assigned;
-		String picked = (String) JOptionPane.showInputDialog(this, "Assign \"" + chosenTask.getField(task.Field.NAME) + "\" to:",
-				"Assign Task", JOptionPane.PLAIN_MESSAGE, null, choices, current);
-		if (picked != null) {
-			tasks.assignTask(chosenTask.getId(), TaskForm.NOBODY.equals(picked) ? null : picked);
-			refreshTable();
-		}
-	}
-
-	private void deleteTask() {
-		task chosenTask = selectedTask();
-		if (chosenTask == null) {
-			return;
-		}
-		int answer = JOptionPane.showConfirmDialog(this, "Delete \"" + chosenTask.getField(task.Field.NAME) + "\"? This can't be undone.",
-				"Delete Task", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-		if (answer == JOptionPane.YES_OPTION) {
-			tasks.removeTask(chosenTask.getId());
-			refreshTable();
-		}
-	}
-
-	// switches the whole app between dark and light, keeping the menu item and button in sync
-	private void setDarkMode(boolean dark) {
-		Theme.setDark(dark);
+	// keeps the View menu item and the Dark Mode button showing the same thing
+	public void setDarkModeSelected(boolean dark) {
 		darkModeItem.setSelected(dark);
 		darkModeButton.setSelected(dark);
-	}
-
-	private void logOut() {
-		LoginFrame login = new LoginFrame(users, tasks);
-		login.setVisible(true);
-		dispose();
 	}
 }
