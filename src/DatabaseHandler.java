@@ -8,10 +8,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
- * TaskDatabase is the connection to the SQLite database (using JDBC).
+ * DatabaseHandler is the connection to the SQLite database (using JDBC).
  * Think of it as a table of tasks where you can read or change one value at a time.
- * It doesn't know about TaskList, a separate handler class will move the data
- * between the two.
+ * It doesn't know about TaskList, whatever connects the two calls this class.
  *
  * Values use the same types as task.getField():
  *   DATE_CREATED, DATE_FINISHED, DUE_DATE -> LocalDate
@@ -20,18 +19,18 @@ import java.util.ArrayList;
  *   everything else                       -> String
  * Every task in the database is found by its id.
  */
-public class TaskDatabase {
+public class DatabaseHandler {
 
     private Connection connection;
 
     // uses the default database file (tasks.db)
-    public TaskDatabase() {
+    public DatabaseHandler() {
         this("tasks.db");
     }
 
     // uses a different database file, handy for JUnit tests
     // the file is created if it isn't there yet
-    public TaskDatabase(String dbFile) {
+    public DatabaseHandler(String dbFile) {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile);
             createTable();
