@@ -8,9 +8,9 @@ public class LoginFrameFunctionality {
 
 	private LoginFrame frame;     // the login window, used to read the boxes and show messages
 	private UserDatabaseHandler users;
-	private TaskList tasks;
+	private TaskListHandler tasks;
 
-	public LoginFrameFunctionality(LoginFrame frame, UserDatabaseHandler users, TaskList tasks) {
+	public LoginFrameFunctionality(LoginFrame frame, UserDatabaseHandler users, TaskListHandler tasks) {
 		this.frame = frame;
 		this.users = users;
 		this.tasks = tasks;

@@ -14,10 +14,10 @@ import java.util.ArrayList;
 
 /**
  * UserDatabaseHandler does all the SQL for the users table (SQLite through JDBC).
- * It only works with User objects. It doesn't know about task or TaskList,
+ * It only works with User objects. It doesn't know about task or TaskListHandler,
  * and they don't know about it.
  *
- * It uses the same database file as DatabaseHandler (tasks.db) but has its own connection and its own table.
+ * It uses the same database file as TaskListHandler (tasks.db) but has its own connection and its own table.
  * Passwords come in as plain text and get hashed in here before they are saved,
  * so only the hash is ever stored. Nothing outside this class needs to know about hashing.
  */

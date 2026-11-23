@@ -35,7 +35,7 @@ public class LoginFrame extends JFrame {
 		this(null, null);
 	}
 
-	public LoginFrame(UserDatabaseHandler users, TaskList tasks) {
+	public LoginFrame(UserDatabaseHandler users, TaskListHandler tasks) {
 		functionality = new LoginFrameFunctionality(this, users, tasks);
 
 		setTitle("TaskTracker | Log in");

@@ -5,17 +5,17 @@ import javax.swing.JOptionPane;
 /**
  * MainWindowFunctionality is what the buttons, menus and controls on the main window do.
  * MainWindowFrame only builds the window, and each of its controls calls one method here.
- * All changes to tasks go through TaskList.
+ * All changes to tasks go through TaskListHandler.
  */
 public class MainWindowFunctionality {
 
 	private MainWindowFrame frame;        // the main window, used to read the controls and fill the table
 	private String currentUser;
-	private TaskList tasks;
+	private TaskListHandler tasks;
 	private UserDatabaseHandler users;
 	private ArrayList<task> shownTasks;   // the tasks in the table, in the same order as the rows
 
-	public MainWindowFunctionality(MainWindowFrame frame, String currentUser, TaskList tasks, UserDatabaseHandler users) {
+	public MainWindowFunctionality(MainWindowFrame frame, String currentUser, TaskListHandler tasks, UserDatabaseHandler users) {
 		this.frame = frame;
 		this.currentUser = currentUser;
 		this.tasks = tasks;
@@ -26,7 +26,7 @@ public class MainWindowFunctionality {
 	// ---------- filling the table ----------
 
 	// Show box, My tasks only box and Sort by box:
-	// rebuilds the table from the TaskList using what those three controls are set to
+	// rebuilds the table from the saved tasks using what those three controls are set to
 	public void refreshTable() {
 		if (tasks == null || !frame.isFinishedBuilding()) {
 			return;   // the window is still being built
@@ -223,7 +223,7 @@ public class MainWindowFunctionality {
 
 	// ---------- helpers ----------
 
-	// turns the Sort by choice into the task.Field that TaskList.sortBy wants
+	// turns the Sort by choice into the task.Field that TaskListHandler.sortBy wants
 	private task.Field sortChoiceToField(String choice) {
 		if ("Priority".equals(choice)) {
 			return task.Field.PRIORITY;

@@ -22,8 +22,8 @@ import javax.swing.border.EmptyBorder;
 
 /**
  * Pop-up window for adding a new task or editing one.
- * It only collects the values. MainWindowFunctionality reads them with the getters and updates the TaskList,
- * so the TaskList rules (like setting the date finished) stay in one place.
+ * It only collects the values. MainWindowFunctionality reads them with the getters and saves the
+ * changes through TaskListHandler, so the rules (like setting the date finished) stay in one place.
  * Built so WindowBuilder can open it in the Design tab.
  */
 public class TaskForm extends JDialog {

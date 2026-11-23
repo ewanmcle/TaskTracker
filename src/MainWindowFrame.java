@@ -57,10 +57,10 @@ public class MainWindowFrame extends JFrame {
 
 	// WindowBuilder uses this constructor to show the design
 	public MainWindowFrame() {
-		this("ewan", new TaskList(), null);
+		this("ewan", null, null);
 	}
 
-	public MainWindowFrame(String currentUser, TaskList tasks, UserDatabaseHandler users) {
+	public MainWindowFrame(String currentUser, TaskListHandler tasks, UserDatabaseHandler users) {
 		functionality = new MainWindowFunctionality(this, currentUser, tasks, users);
 
 		setTitle("TaskTracker | " + currentUser);
